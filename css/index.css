@@ -3,14 +3,48 @@
 	width: 100%;
   padding: 0;
   margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 #app canvas {
   height: 500px;
   width: 500px;
   border-radius: 0.25rem;
-  box-shadow: 0 0.5rem 0.75rem rgba(0, 0, 0, 0.25);
+  border: 0.1rem solid var(--secondary);
+  box-shadow: 0 0.5rem 0.75rem var(--secondary);
+}
+
+.canvas-container .canvas-tools {
+  margin: 0 2rem 0 0;
+  min-height: 100%;
+}
+
+.canvas-tools .tool {
+  height: 3rem;
+  width: 3rem;
+  font-size: 1.25rem;
+  outline: none;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  color: var(--secondary-light);
+  background: var(--secondary-dark);
+  margin: 0 0 1.5rem 0;
+  transition: box-shadow 0.2s ease;
+}
+
+.tool:hover {
+  box-shadow: 0 0 0.5rem var(--secondary-dark);
+}
+
+.tool.align-self-end {
+  margin: auto 0 0 0;
+}
+
+.tool.active {
+  background: var(--primary);
+  color: var(--secondary-light);
+}
+
+.tool.active:hover {
+  box-shadow: 0 0 0.5rem var(--primary-dark);
 }
