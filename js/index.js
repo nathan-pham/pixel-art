@@ -1,9 +1,11 @@
+// initialize canvas
 const canvas = document.querySelector("canvas")
 const ctx = canvas.getContext("2d")
 const size = 50
 
 let mouseDown = false
 let pixels = []
+let previous = {}
 let settings = {
   color: "#000000",
   tool: "pen"
@@ -14,6 +16,7 @@ Object.assign(canvas, {
   height: 500
 })
 
+// draw a line
 const line = (x1=0, y1=0, x2, y2) => {
   ctx.beginPath()
   ctx.moveTo(x1, y1)
@@ -21,10 +24,12 @@ const line = (x1=0, y1=0, x2, y2) => {
   ctx.stroke()
 }
 
+// map x & y into grid space
 const constrain = (coord) => {
   return Math.floor(coord / size) * size
 }
 
+// get mouse coordinates on canvas
 const getMouse = (e) => {
   const rect = canvas.getBoundingClientRect()
   const scaleX = canvas.width / rect.width
@@ -36,10 +41,12 @@ const getMouse = (e) => {
   }
 }
 
+// clear everything
 const removeGrid = () => {
   ctx.clearRect(0, 0, 500, 500)
 }
 
+// redraw lines
 const refreshGrid = (clear) => {
   if(clear) {
     removeGrid()
@@ -55,6 +62,7 @@ const refreshGrid = (clear) => {
   }
 }
 
+// draw all pixels
 const drawPixels = () => {
   for(const pixel of pixels) {
     const { x, y, color } = pixel
@@ -63,6 +71,7 @@ const drawPixels = () => {
   }
 }
 
+// remove a pixel
 const erasePixel = ({ x, y }) => {
   x = constrain(x)
   y = constrain(y)
@@ -73,12 +82,14 @@ const erasePixel = ({ x, y }) => {
 
   if(exists) {
     pixels = pixels.filter(v => v !== exists)
+    previous = { type: "re-add", pixel: exists }
   }
   
   refreshGrid(true)
   drawPixels()
 }
 
+// add a pixel
 const addPixel = ({ x, y }) => {
   x = constrain(x)
   y = constrain(y)
@@ -91,10 +102,18 @@ const addPixel = ({ x, y }) => {
     pixels = pixels.filter(v => v !== exists)
   }
 
-  pixels.push({ x, y, color: settings.color })
+  const pixel = {
+    x, y, color: settings.color
+  }
+
+  pixels.push(pixel)
+
+  previous = { type: "remove", pixel }
+ 
   drawPixels()
 }
 
+// tool management
 const manageTool = (e) => {
   switch(settings.tool) {
     case "pen":
@@ -106,6 +125,7 @@ const manageTool = (e) => {
   }
 }
 
+// clicking
 canvas.addEventListener("mousemove", e => {
   if(mouseDown) {
     manageTool(e)
@@ -127,6 +147,7 @@ document.addEventListener("visibilitychange", e => {
 
 refreshGrid()
 
+// tools
 const tools = document.querySelectorAll(".interact-canvas")
 const saveTool = document.querySelector("button[title='save']")
 const colorTool = document.querySelector("button[title='color']")
@@ -138,18 +159,19 @@ const removeActive = () => {
   }
 }
 
-for(const color of colorOptions) {
-  const hex = "#" + color.dataset.color
-  color.style.background = hex
-  color.setAttribute("title", hex)
-
-  color.addEventListener("click", () => {
-    settings.color = hex
-  })
-}
-
-
+// create color pallete
+// initialize pen & eraser tool
 const initializeTools = () => {
+  for(const color of colorOptions) {
+    const hex = "#" + color.dataset.color
+    color.style.background = hex
+    color.setAttribute("title", hex)
+
+    color.addEventListener("click", () => {
+      settings.color = hex
+    })
+  }
+
   for(const tool of tools) {
     tool.addEventListener("click", (e) => {
       settings.tool = tool.getAttribute("title")
@@ -161,6 +183,7 @@ const initializeTools = () => {
 
 initializeTools()
 
+// save pixel art
 saveTool.onclick = () => {
   const anchor = document.createElement("a")
   Object.assign(anchor.style, {
@@ -183,3 +206,14 @@ saveTool.onclick = () => {
   refreshGrid()
   drawPixels()
 }
+
+
+document.addEventListener("keydown", (e) => {
+  if (event.ctrlKey && event.key === 'z') {
+    const { type, pixel } = previous
+    type == "remove"
+      ? erasePixel(pixel)
+      : addPixel(pixel)
+
+  }
+})
