@@ -72,7 +72,7 @@ const drawPixels = () => {
 }
 
 // remove a pixel
-const erasePixel = ({ x, y }) => {
+const erasePixel = ({ x, y, color }) => {
   x = constrain(x)
   y = constrain(y)
 
@@ -90,7 +90,7 @@ const erasePixel = ({ x, y }) => {
 }
 
 // add a pixel
-const addPixel = ({ x, y }) => {
+const addPixel = ({ x, y, color }) => {
   x = constrain(x)
   y = constrain(y)
 
@@ -103,7 +103,7 @@ const addPixel = ({ x, y }) => {
   }
 
   const pixel = {
-    x, y, color: settings.color
+    x, y, color: color || settings.color
   }
 
   pixels.push(pixel)
@@ -153,9 +153,15 @@ const saveTool = document.querySelector("button[title='save']")
 const colorTool = document.querySelector("button[title='color']")
 const colorOptions = colorTool.getElementsByClassName("colors")[0].querySelectorAll("div")
 
-const removeActive = () => {
+const removeActiveTools = () => {
   for(const tool of tools) {
     tool.classList.remove("active")
+  }
+}
+
+const removeActiveColors = () => {
+  for(const color of colorOptions) {
+    color.classList.remove("active")
   }
 }
 
@@ -166,16 +172,17 @@ const initializeTools = () => {
     const hex = "#" + color.dataset.color
     color.style.background = hex
     color.setAttribute("title", hex)
-
     color.addEventListener("click", () => {
       settings.color = hex
+      removeActiveColors()
+      color.classList.add("active")
     })
   }
 
   for(const tool of tools) {
     tool.addEventListener("click", (e) => {
       settings.tool = tool.getAttribute("title")
-      removeActive()
+      removeActiveTools()
       tool.classList.add("active")
     })
   }
@@ -214,6 +221,5 @@ document.addEventListener("keydown", (e) => {
     type == "remove"
       ? erasePixel(pixel)
       : addPixel(pixel)
-
   }
 })
