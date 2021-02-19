@@ -5,7 +5,7 @@ const size = 50
 let mouseDown = false
 let pixels = []
 let settings = {
-  color: "#000",
+  color: "#000000",
   tool: "pen"
 }
 
@@ -36,9 +36,13 @@ const getMouse = (e) => {
   }
 }
 
+const removeGrid = () => {
+  ctx.clearRect(0, 0, 500, 500)
+}
+
 const refreshGrid = (clear) => {
   if(clear) {
-    ctx.clearRect(0, 0, 500, 500)
+    removeGrid()
   }
 
   ctx.strokeStyle = "#eee"
@@ -126,12 +130,24 @@ refreshGrid()
 const tools = document.querySelectorAll(".interact-canvas")
 const saveTool = document.querySelector("button[title='save']")
 const colorTool = document.querySelector("button[title='color']")
+const colorOptions = colorTool.getElementsByClassName("colors")[0].querySelectorAll("div")
 
 const removeActive = () => {
   for(const tool of tools) {
     tool.classList.remove("active")
   }
 }
+
+for(const color of colorOptions) {
+  const hex = "#" + color.dataset.color
+  color.style.background = hex
+  color.setAttribute("title", hex)
+
+  color.addEventListener("click", () => {
+    settings.color = hex
+  })
+}
+
 
 const initializeTools = () => {
   for(const tool of tools) {
@@ -146,20 +162,24 @@ const initializeTools = () => {
 initializeTools()
 
 saveTool.onclick = () => {
-  console.log("TEST")
-}
+  const anchor = document.createElement("a")
+  Object.assign(anchor.style, {
+    opacity: 0,
+    display: "none"
+  })
+  document.body.appendChild(anchor)
 
-/*
-        <button class="tool" title="pen">
-          <i class="fas fa-pen"></i>
-        </button>
-        <button class="tool" title="color">
-          <i class="fas fa-palette"></i>
-        </button>
-        <button class="tool" title="eraser">
-          <i class="fas fa-eraser"></i>
-        </button>
-        <button class="tool align-self-end" title="save">
-          <i class="far fa-save"></i>
-        </button>
- */
+  removeGrid()
+  drawPixels()
+
+  anchor.setAttribute("download", "pixel-art.png")
+  anchor.setAttribute("href", 
+    canvas.toDataURL("image/png").replace("image/png", "image/octet-stream")
+  )
+
+  anchor.click()
+  anchor.remove()
+
+  refreshGrid()
+  drawPixels()
+}
